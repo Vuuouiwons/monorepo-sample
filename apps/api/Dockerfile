@@ -1,29 +1,24 @@
-# STAGE 1: Prune
-FROM node:22-alpine AS pruner
+FROM node:22-alpine AS builder
 WORKDIR /app
-RUN npm install -g turbo
+
 COPY . .
-RUN turbo prune --scope=api --docker
 
-FROM node:22-alpine AS installer
-WORKDIR /app
+RUN npm i
+RUN npm i tsup -D
 
-COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/package-lock.json ./package-lock.json
+RUN npx turbo run build --filter=api
 
-RUN npm install
+RUN npx tsup apps/api/dist/index.js \
+    --clean \
+    --minify \
+    --out-dir /app/dist/final
 
-# STAGE 3: Build & Run
+# STAGE 2: Run
 FROM node:22-alpine AS runner
 WORKDIR /app
 
-COPY --from=installer /app/node_modules ./node_modules
-COPY --from=installer /app .
+COPY --from=builder /app/dist/final/index.js .
 
-COPY --from=pruner /app/out/full/ .
-COPY --from=pruner /app/tsconfig.base.json .
+EXPOSE 3000
 
-RUN npm run build
-
-
-CMD ["node", "apps/api/dist/index.js"]
+CMD ["node", "index.js"]

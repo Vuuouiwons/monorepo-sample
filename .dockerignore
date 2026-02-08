@@ -1,0 +1,44 @@
+# 1. Dependency Directories (Crucial)
+# Never copy local node_modules; let Docker install them clean.
+**/node_modules
+**/.pnpm-store
+**/.npm
+
+# 2. Build Artifacts
+# We want Docker to build fresh, not use your local stale files.
+**/dist
+**/build
+**/out
+**/.next
+**/.turbo
+**/.cache
+**/tsconfig.tsbuildinfo
+
+# 3. Environment & Secrets (Security)
+# Prevent leaking local secrets into the image layer history.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# 4. Version Control & Editor Config
+.git
+.gitignore
+.github
+.vscode
+.idea
+*.swp
+*.swo
+
+# 5. Testing & Logs
+coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 6. OS Files
+.DS_Store
+Thumbs.db

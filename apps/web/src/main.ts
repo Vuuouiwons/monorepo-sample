@@ -1,5 +1,5 @@
 import { MONOREPO_CONSTANT, add } from '@repo/math';
-import { dateNow } from '../../../packages/date/src';
+import { dateNow } from '@repo/date';
 
 const contentDiv = document.querySelector<HTMLDivElement>('#content')!;
 const button = document.querySelector<HTMLButtonElement>('#counter')!;

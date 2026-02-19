@@ -2,8 +2,8 @@
     "name": "web",
     "version": "0.0.0",
     "dependencies": {
-        "@repo/math": "*",
-        "@repo/date": "v0.0.0"
+        "@repo/math": "workspace:*",
+        "@repo/date": "workspace:*"
     },
     "devDependencies": {
         "typescript": "^5.3.3",

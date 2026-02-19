@@ -1,16 +1,36 @@
-FROM node:lts-alpine AS builder
+FROM node:lts-slim AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i -g turbo@^2
 
 WORKDIR /app
 
-COPY . .
+FROM base AS prepare
 
-RUN npm install -g turbo
-RUN npm install
+COPY . /app
 
-RUN npm run build
+RUN turbo prune web --docker
 
-FROM nginx:alpine AS runner
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+FROM base AS build
+
+COPY --from=prepare /app/out/json/ .
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
+
+COPY --from=prepare /app/out/full/ .
+
+# Uncomment and use build args to enable remote caching
+# ARG TURBO_TEAM
+# ENV TURBO_TEAM=$TURBO_TEAM
+# ARG TURBO_TOKEN
+# ENV TURBO_TOKEN=$TURBO_TOKEN
+
+RUN pnpm run build
+
+FROM nginx:1-alpine
+
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
 EXPOSE 80
 

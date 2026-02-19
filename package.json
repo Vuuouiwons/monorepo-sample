@@ -1,11 +1,7 @@
 {
     "name": "monorepo-root",
     "private": true,
-    "packageManager": "npm@11.4.2",
-    "workspaces": [
-        "apps/*",
-        "packages/*"
-    ],
+    "packageManager": "pnpm@10.30.0",
     "scripts": {
         "build": "turbo run build",
         "dev": "turbo run dev",

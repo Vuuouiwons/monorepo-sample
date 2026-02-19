@@ -1,24 +1,62 @@
-FROM node:lts-alpine AS builder
+FROM node:lts-trixie-slim AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
 WORKDIR /app
 
-COPY . .
+FROM base AS build-base
 
-RUN npm i
-RUN npm i tsup -D
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i -g turbo@^2
 
-RUN npx turbo run build --filter=api
+FROM build-base AS prepare
 
-RUN npx tsup apps/api/dist/index.js \
-    --clean \
-    --minify \
-    --out-dir /app/dist/final
+COPY . /app
 
-# STAGE 2: Run
-FROM node:lts-alpine AS runner
-WORKDIR /app
+RUN turbo prune api --docker
 
-COPY --from=builder /app/dist/final/index.js .
+FROM build-base AS build
+
+COPY --from=prepare /app/out/json/ .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
+
+COPY --from=prepare /app/out/full/ .
+
+# Uncomment and use build args to enable remote caching
+# ARG TURBO_TEAM
+# ENV TURBO_TEAM=$TURBO_TEAM
+# ARG TURBO_TOKEN
+# ENV TURBO_TOKEN=$TURBO_TOKEN
+
+RUN pnpm run build
+
+FROM build AS artifacts
+
+WORKDIR /runtime/packages
+
+RUN for pkg in /app/packages/*; do \
+      if [ -d "$pkg/dist" ]; then \
+        name=$(basename "$pkg"); \
+        mkdir -p "/runtime/packages/$name"; \
+        cp -r "$pkg/dist" "/runtime/packages/$name/dist"; \
+        cp "$pkg/package.json" "/runtime/packages/$name/package.json"; \
+      fi \
+    done
+
+
+FROM base AS prod
+
+COPY --from=prepare /app/out/json /app
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
+
+COPY --from=build /app/apps/api/dist ./apps/api/dist
+# COPY --from=build /app/packages ./packages
+COPY --from=artifacts /runtime/packages ./packages
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["node", "/app/apps/api/dist/index.js"]
+# # CMD ["sleep", "1234"]

@@ -1,11 +1,11 @@
-import { MONOREPO_CONSTANT, add } from '@repo/math';
+import { MONOREPO_CONSTANT, add, testFunction } from '@repo/math';
 import { dateNow } from '@repo/date';
 
 const contentDiv = document.querySelector<HTMLDivElement>('#content')!;
 const button = document.querySelector<HTMLButtonElement>('#counter')!;
 
 // 1. Use Shared Code
-console.log(`Shared Math check: 5 + 5 = ${add(5, 5)}`);
+console.log(`Shared Math check: 5 + 5 = ${add(5, 5)} | ${testFunction()}`);
 
 // 2. Local State
 let count: number = 0;

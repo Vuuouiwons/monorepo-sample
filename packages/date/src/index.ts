@@ -16,4 +16,8 @@ export const managePassword = async () => {
     const isMatch = await bcrypt.compare(password, hashedPassword);
 
     const isWrong = await bcrypt.compare('wrongPassword', hashedPassword);
+    
+    console.log(hashedPassword);
+
+    return String(hashedPassword);
 }

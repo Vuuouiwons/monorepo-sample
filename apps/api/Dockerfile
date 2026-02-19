@@ -49,14 +49,11 @@ RUN for pkg in /app/packages/*; do \
 FROM base AS prod
 
 COPY --from=prepare /app/out/json /app
-
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
 
 COPY --from=build /app/apps/api/dist ./apps/api/dist
-# COPY --from=build /app/packages ./packages
 COPY --from=artifacts /runtime/packages ./packages
 
 EXPOSE 3000
 
 CMD ["node", "/app/apps/api/dist/index.js"]
-# # CMD ["sleep", "1234"]

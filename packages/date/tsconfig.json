@@ -2,12 +2,7 @@
     "extends": "@repo/tsconfig/base.json",
     "compilerOptions": {
         "outDir": "dist",
-        "rootDir": "src",
-        "declaration": true,
-        "declarationMap": true,
-        "emitDeclarationOnly": false,
-        "module": "ESNext",
-        "target": "ES2022",
+        "rootDir": "src"
     },
     "include": [
         "src"
